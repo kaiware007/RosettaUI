@@ -53,6 +53,7 @@ namespace RosettaUI.UIToolkit.Builder
                 
                 [typeof(ColorFieldElement)] = BuildBindFunc<ColorField>.Create(Bind_ColorField),
                 [typeof(GradientFieldElement)] = BuildBindFunc<GradientField>.Create(Bind_GradientField),
+                [typeof(AnimationCurveFieldElement)] = BuildBindFunc<AnimationCurveField>.Create(Bind_AnimationCurveField),
                 [typeof(FloatFieldElement)] = BuildBindFunc<FloatField>.Create(Bind_Field<float, FloatField>),
                 [typeof(IntFieldElement)] = BuildBindFunc<IntegerField>.Create(Bind_Field<int, IntegerField>),
                 [typeof(UIntFieldElement)] = BuildBindFunc<UIntField>.Create(Bind_Field<uint, UIntField>),

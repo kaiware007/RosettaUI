@@ -56,6 +56,24 @@ namespace RosettaUI.UIToolkit.Builder
             }
         }
         
+        private bool Bind_AnimationCurveField(Element element, VisualElement visualElement)
+        {
+            if(element is not FieldBaseElement<AnimationCurve> animationCurveElement || visualElement is not AnimationCurveField animationCurveField) return false;
+            
+            Bind_Field(animationCurveElement, animationCurveField, true);
+            
+            animationCurveField.showAnimationCurvePickerFunc += ShowAnimationCurvePicker;
+            element.GetViewBridge().onUnsubscribe += () => animationCurveField.showAnimationCurvePickerFunc -= ShowAnimationCurvePicker;
+            
+            return true;
+            
+            void ShowAnimationCurvePicker(Vector2 pos, UnityInternalAccess.AnimationCurveField target)
+            {
+                AnimationCurvePicker.Show(pos, target, animationCurveField.value, curve => animationCurveField.value = curve);
+            }
+        }
+
+        
         public bool Bind_Field<TValue, TField>(Element element, VisualElement visualElement)
             where TField : BaseField<TValue>, new()
         {
