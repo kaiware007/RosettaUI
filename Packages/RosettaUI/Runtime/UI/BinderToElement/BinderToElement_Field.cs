@@ -34,6 +34,7 @@ namespace RosettaUI
                 IBinder<bool> ib => new ToggleElement(label, ib),
                 IBinder<Color> ib => new ColorFieldElement(label, ib),
                 IBinder<Gradient> ib => new GradientFieldElement(label, ib),
+                IBinder<AnimationCurve> ib => CreateAnimationCurveElement(label, ib),
                 _ when valueType.IsEnum => CreateEnumElement(label, binder),
                 _ when TypeUtility.IsNullable(valueType) => CreateNullableFieldElement(label, binder, option),
                 _ when typeof(IElementCreator).IsAssignableFrom(valueType) => CreateElementCreatorElement(label, binder),
@@ -43,6 +44,114 @@ namespace RosettaUI
             };
         }
 
+        private static Element CreateAnimationCurveElement(LabelElement label, IBinder<AnimationCurve> binder)
+        {
+            var instance = binder.Get();
+             Keyframe[] keyframes = instance.keys;
+                CustomKeyFrame[] customKeyFrames = keyframes.Select(k => (CustomKeyFrame) k).ToArray();
+            
+                Texture2D temp = new Texture2D(256, 32, TextureFormat.RGB24,false, true)
+                {
+                    filterMode = FilterMode.Bilinear,
+                    wrapMode = TextureWrapMode.Clamp
+                };
+                
+                static void CreateAnimationCurveTexture(ref Texture2D texture, int stepNum, int heightNum, AnimationCurve curve)
+                {
+                    if (texture == null)
+                    {
+                        texture = new Texture2D(stepNum, heightNum, TextureFormat.RGB24, false, true)
+                        {
+                            filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp
+                        };
+                    }
+
+                    for (int i = 0; i < stepNum; i++)
+                    {
+                        for (int j = 0; j < stepNum; j++)
+                        {
+                            texture.SetPixel(i, j, Color.black);
+                        }
+                    }
+
+                    Vector2 graphTextureTexelSize = new Vector2(1f / stepNum, 1f / heightNum);
+                    float maxValue = 1f;
+                    float minValue = 0f;
+                    float[] values = new float[stepNum];
+                    for (int i = 0; i < stepNum; i++)
+                    {
+                        float time = graphTextureTexelSize.x * i;
+                        time += graphTextureTexelSize.x * 0.5f;
+                        float value = curve.Evaluate(time);
+                        if(value > maxValue) maxValue = value;
+                        if(value < minValue) minValue = value;
+                        values[i] = value;
+                    }
+                    var hRatio = heightNum / (maxValue - minValue);     // テクスチャの高さとカーブの高さの比率
+                    var yZero= Mathf.FloorToInt(-minValue * hRatio);    // Y0
+                    var yOne = yZero + Mathf.FloorToInt(hRatio);         // y1
+                    
+                    for (int i = 0; i < stepNum; i++)
+                    {
+                        var v = values[i] - minValue;
+                        var y = Mathf.FloorToInt(v * hRatio); // (int)(values[i] * hpow)
+                        if (yZero != y && yZero < heightNum && yZero >= 0)
+                        {
+                            texture.SetPixel(i, yZero, Color.gray);
+                        }
+
+                        if (yOne != y && yOne < heightNum && yOne >= 0)
+                        {
+                            texture.SetPixel(i, yOne, Color.gray);
+                        }
+
+                        texture.SetPixel(i, y, Color.red);
+                    }
+                    texture.Apply();
+                }
+                
+                CreateAnimationCurveTexture(ref temp, 256, 32, instance);
+
+                
+                return UI.Row(
+                label.SetMinWidth(240f),
+                UI.Space().SetWidth(10f),
+                UI.Image(temp).SetHeight(50f).SetWidth(300f),
+                UI.WindowLauncher("Edit Curve", 
+                    UI.Window($"Edit Curve - {label.Value}",
+                        UI.Image(temp).SetHeight(100f).SetWidth(800f),
+                        UI.Field("KeyFrames",
+                            () => customKeyFrames,
+                            val =>
+                            {
+                                customKeyFrames = val;
+                                keyframes = customKeyFrames.Select(k => (Keyframe) k).ToArray();
+                                instance.keys = keyframes;
+                                CreateAnimationCurveTexture(ref temp, 256, 32, instance);
+                            })
+                    )
+                )
+            );
+        }
+        
+        [Serializable]
+        public struct CustomKeyFrame
+        {
+            public float Time;
+            public float Value;
+            public float InOutTangent;
+
+            public static implicit operator Keyframe(CustomKeyFrame value)
+            {
+                return new Keyframe(value.Time, value.Value, value.InOutTangent, value.InOutTangent);
+            }
+
+            public static implicit operator CustomKeyFrame(Keyframe value)
+            {
+                return new CustomKeyFrame() { Time = value.time, Value = value.value, InOutTangent = value.inTangent };
+            }
+        }
+        
         private static Element CreateEnumElement(LabelElement label, IBinder binder)
         {
             var valueType = binder.ValueType;

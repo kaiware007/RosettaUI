@@ -28,7 +28,9 @@ namespace RosettaUI.Example
         public bool boolValue;
         public MyEnum enumValue;
         public Color colorValue;
+        public Color copyColorValue;
         public Gradient gradientValue;
+        public Gradient copyGradientValue;
         public Vector2 vector2Value;
         public Vector3 vector3Value;
         public Vector4 vector4Value;
@@ -42,7 +44,8 @@ namespace RosettaUI.Example
         public List<int> intList = new(new[] {1, 2, 3});
         public float[] floatArray = {1f, 2f, 3f};
         public SimpleClass simpleClass;
-
+        public AnimationCurve animationCurveValue = AnimationCurve.Linear(0,0,1,1);
+        
         public List<SimpleClass> classList = new[]
         {
             new SimpleClass {floatValue = 1f, stringValue = "First"}
@@ -51,10 +54,20 @@ namespace RosettaUI.Example
         [FormerlySerializedAs("attributeTestClass")] public AttributeExampleClass attributeExampleClass;
 
 
+        void CopyColor()
+        {
+            copyColorValue = colorValue;
+        }
+        
+        void CopyGradient()
+        {
+            copyGradientValue = gradientValue;
+        }
+        
         public Element CreateElement(LabelElement _)
         {
             SyntaxHighlighter.AddPattern("type", nameof(AttributeExampleClass));
-            
+
             return UI.Tabs(
                 ExampleTemplate.UIFunctionTab(nameof(UI.Field),
                     UI.Field(() => intValue),
@@ -63,8 +76,10 @@ namespace RosettaUI.Example
                     UI.Field(() => stringValue),
                     UI.Field(() => boolValue),
                     UI.Field(() => enumValue),
-                    UI.Field(() => colorValue),
-                    UI.Field(() => gradientValue),
+                    UI.Field(() => colorValue).RegisterValueChangeCallback(CopyColor),
+                    UI.FieldReadOnly(() => copyColorValue),
+                    UI.Field(() => gradientValue).RegisterValueChangeCallback(CopyGradient),
+                    UI.FieldReadOnly(()=>copyGradientValue),
                     UI.Field(() => vector2Value),
                     UI.Field(() => vector3Value),
                     UI.Field(() => vector4Value),
@@ -78,7 +93,8 @@ namespace RosettaUI.Example
                     UI.Field(() => intList),
                     UI.Field(() => floatArray),
                     UI.Field(() => simpleClass),
-                    UI.Field(() => classList)
+                    UI.Field(() => classList),
+                    UI.Field(()=>animationCurveValue)
                 ),
                 ExampleTemplate.UIFunctionTab(nameof(UI.FieldReadOnly),
                     UI.FieldReadOnly(() => intValue),
@@ -88,7 +104,9 @@ namespace RosettaUI.Example
                     UI.FieldReadOnly(() => boolValue),
                     UI.FieldReadOnly(() => enumValue),
                     UI.FieldReadOnly(() => colorValue),
+                    UI.FieldReadOnly(() => copyColorValue),
                     UI.FieldReadOnly(() => gradientValue),
+                    UI.FieldReadOnly(()=>copyGradientValue),
                     UI.FieldReadOnly(() => vector2Value),
                     UI.FieldReadOnly(() => vector3Value),
                     UI.FieldReadOnly(() => vector4Value),
@@ -102,7 +120,8 @@ namespace RosettaUI.Example
                     UI.FieldReadOnly(() => intList),
                     UI.FieldReadOnly(() => floatArray),
                     UI.FieldReadOnly(() => simpleClass),
-                    UI.FieldReadOnly(() => classList)
+                    UI.FieldReadOnly(() => classList),
+                    UI.FieldReadOnly(()=>animationCurveValue)
                 ),
                 ExampleTemplate.Tab("Codes",
                     ExampleTemplate.CodeElementSets("Argument",
@@ -144,3 +163,4 @@ UI.Field(() => attributeExampleClass).Open();
         }
     }
 }
+
