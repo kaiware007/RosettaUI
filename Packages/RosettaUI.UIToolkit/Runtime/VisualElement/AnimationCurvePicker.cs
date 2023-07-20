@@ -47,9 +47,9 @@ namespace RosettaUI.UIToolkit
                 _customKeyFrames = _curve.keys.Select(key => (CustomKeyFrame)key).ToArray();
                 if (_animationCurvePreview != null)
                 {
-                    Texture2D texture = AnimationCurvePickerHelper.GenerateAnimationCurveTexture(value,
+                    _previeTexture = AnimationCurvePickerHelper.GenerateAnimationCurveTexture(value,
                         _animationCurvePreview.style.backgroundImage.value.texture);
-                    _animationCurvePreview.style.backgroundImage = texture;
+                    _animationCurvePreview.style.backgroundImage = _previeTexture;
                 }
             }
         }
@@ -76,7 +76,6 @@ namespace RosettaUI.UIToolkit
             
             _window.Show(position, target);
 
-
             // はみ出し抑制
             if(!float.IsNaN(_window.resolvedStyle.width) && !float.IsNaN(_window.resolvedStyle.height))
             {
@@ -88,6 +87,8 @@ namespace RosettaUI.UIToolkit
             _animationCurvePickerInstance.onCurveChanged += onCurveChanged;
             _animationCurvePickerInstance.RegisterCallback<DetachFromPanelEvent>(OnDetach);
 
+            _animationCurvePickerInstance.ResetUI();
+            
             void OnDetach(DetachFromPanelEvent _)
             {
                 _animationCurvePickerInstance.onCurveChanged -= onCurveChanged;
@@ -120,6 +121,19 @@ namespace RosettaUI.UIToolkit
             _curve = initialCurve;
             _customKeyFrames = initialCurve.keys.Select(key => (CustomKeyFrame)key).ToArray();
             _keyframes = initialCurve.keys;
+
+            PreviewCurve = initialCurve;
+            this.ScheduleToUseResolvedLayoutBeforeRendering(() =>
+            {
+                ResetUI();
+                // はみ出し抑制
+                VisualElementExtension.CheckOutOfScreen(_window.Position, _window);
+            });
+        }
+
+        public void ResetUI()
+        {
+            Clear();
             var win = UIToolkitBuilder.Build(
                 UI.Page(
                     UI.Image(_previeTexture).SetHeight(100f).SetWidth(800f),
@@ -142,7 +156,7 @@ namespace RosettaUI.UIToolkit
                         }))
             );
             
-            this.Add(win);
+            Add(win);
             var t = this.Q<VisualElement>(null, "unity-image");
             
             if(t != null)
@@ -150,15 +164,8 @@ namespace RosettaUI.UIToolkit
                 _animationCurvePreview = t;
                 _animationCurvePreview.style.backgroundImage = _previeTexture;
             }
-            
-            PreviewCurve = initialCurve;
-            this.ScheduleToUseResolvedLayoutBeforeRendering(() =>
-            {
-                // はみ出し抑制
-                VisualElementExtension.CheckOutOfScreen(_window.Position, _window);
-            });
         }
-
+        
         void UpdateAnimationCurve()
         {
             PreviewCurve = new AnimationCurve(_keyframes);
