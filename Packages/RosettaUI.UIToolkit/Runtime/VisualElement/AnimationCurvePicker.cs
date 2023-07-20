@@ -125,13 +125,12 @@ namespace RosettaUI.UIToolkit
             PreviewCurve = initialCurve;
             this.ScheduleToUseResolvedLayoutBeforeRendering(() =>
             {
-                ResetUI();
                 // はみ出し抑制
                 VisualElementExtension.CheckOutOfScreen(_window.Position, _window);
             });
         }
 
-        public void ResetUI()
+        private void ResetUI()
         {
             Clear();
             var win = UIToolkitBuilder.Build(
