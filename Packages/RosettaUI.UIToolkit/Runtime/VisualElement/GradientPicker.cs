@@ -94,7 +94,7 @@ namespace RosettaUI.UIToolkit
         #region static members
 
         private static VisualTreeAsset _visualTreeAsset;
-        private static RenderTexture _gradientTexture;
+        // private static RenderTexture _gradientTexture;
 
         #endregion
 
