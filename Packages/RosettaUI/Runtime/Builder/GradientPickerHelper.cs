@@ -8,7 +8,7 @@ namespace RosettaUI.Builder
     public static class GradientPickerHelper 
     {
 
-        public static Texture2D GenerateGradientPreview(Gradient gradient, Texture2D texture)
+        public static Texture2D GenerateGradientPreview(Gradient gradient, Texture2D texture, TextureWrapMode wrapMode = TextureWrapMode.Clamp, FilterMode filterMode = FilterMode.Bilinear)
         {
             int width = 256;
             if (texture != null)
@@ -24,14 +24,41 @@ namespace RosettaUI.Builder
             
             Texture2D tex = new Texture2D(g.Length, 1)
             {
-                wrapMode = TextureWrapMode.Clamp,
-                filterMode = FilterMode.Bilinear
+                wrapMode = wrapMode,
+                filterMode = filterMode
             };
             tex.SetPixels(g);
             tex.Apply();
             return tex;
         }
 
+        public static Texture2D GenerateBlendGradientPreview(Gradient gradient1, Gradient gradient2, float blendRatio, Texture2D texture, TextureWrapMode wrapMode = TextureWrapMode.Clamp, FilterMode filterMode = FilterMode.Bilinear)
+        {
+            int width = 256;
+            if (texture != null)
+            {
+                width = texture.width;
+                Object.Destroy(texture);
+            }
+            Color[] g = new Color[width];
+            for (int i = 0; i < g.Length; i++)
+            {
+                var c1 = gradient1.Evaluate(i / (float)g.Length);
+                var c2 = gradient2.Evaluate(i / (float)g.Length);
+                
+                g[i] = Color.Lerp(c1, c2, blendRatio);
+            }
+            
+            Texture2D tex = new Texture2D(g.Length, 1)
+            {
+                wrapMode = wrapMode,
+                filterMode = filterMode
+            };
+            tex.SetPixels(g);
+            tex.Apply();
+            return tex;
+        }
+        
         [System.Serializable]
         public class SerializedAlphaKey
         {
