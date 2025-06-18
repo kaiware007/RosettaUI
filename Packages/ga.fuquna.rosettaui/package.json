@@ -1,0 +1,19 @@
+{
+  "name": "ga.fuquna.rosettaui",
+  "version": "1.11.0",
+  "displayName": "RosettaUI",
+  "description": "Code-based GUI library for development menus for Unity",
+  "unity": "2022.3",
+  "keywords": [
+    "unity",
+    "ui",
+    "ga.fuquna"
+  ],
+  "author": {
+    "name": "fuqunaga",
+    "email": "fukhid@gmail.com",
+    "url": "https://fuquna.ga"
+  },
+  "repository": "github:fuqunaga/RosettaUI",
+  "license": "MIT"
+}

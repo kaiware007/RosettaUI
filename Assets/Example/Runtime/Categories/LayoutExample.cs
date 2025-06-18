@@ -58,7 +58,12 @@ namespace RosettaUI.Example
                             )
                         ),
                         ExampleTemplate.UIFunctionColumnBox(nameof(UI.Box),
-                            UI.Label("box style frame")
+                            UI.Row(
+                                UI.Space().SetWidth(5f),
+                                UI.Box(
+                                    UI.Label("box style frame")
+                                )
+                            )
                         ),
                         ExampleTemplate.UIFunctionColumn(nameof(UI.Page),
                             UI.Label("Adjust the width of the prefix labels."),
@@ -149,8 +154,8 @@ UI.Tabs(
         {
             // ReSharper disable once ConvertToConstant.Local
             var scrollViewItemCount = 50;
-            const float width = 700f;
-            const float height = 300f;
+            const float maxWidth = 500f;
+            const float maxHeight = 200f;
 
             return ExampleTemplate.UIFunctionColumn(nameof(UI.ScrollView),
                 UI.Slider(() => scrollViewItemCount),
@@ -158,7 +163,7 @@ UI.Tabs(
                 UI.Box(
                     UI.Tabs(
                         ("Vertical",
-                            () => UI.ScrollViewVertical(height,
+                            () => UI.ScrollViewVertical(maxHeight,
                                 UI.DynamicElementOnStatusChanged(
                                     () => scrollViewItemCount,
                                     count => UI.Column(
@@ -173,7 +178,7 @@ UI.Tabs(
                             )
                         ),
                         ("Horizontal",
-                            () => UI.ScrollViewHorizontal(null,
+                            () => UI.ScrollViewHorizontal(maxWidth,
                                 UI.DynamicElementOnStatusChanged(
                                     () => scrollViewItemCount,
                                     count => UI.Row(
@@ -191,7 +196,7 @@ UI.Tabs(
                             )
                         ),
                         ("VerticalAndHorizontal",
-                            () => UI.ScrollViewVerticalAndHorizontal(null, height,
+                            () => UI.ScrollViewVerticalAndHorizontal(maxWidth, maxHeight,
                                 UI.DynamicElementOnStatusChanged(
                                     () => scrollViewItemCount,
                                     count =>
@@ -210,13 +215,13 @@ UI.Tabs(
                                                             var idx = i++;
                                                             var str = idx.ToString();
                                                             return UI.Field(
-                                                                UI.Label("Item" + idx, LabelType.Standard),
+                                                                UI.Label($"Item{idx}", LabelType.Standard),
                                                                 () => str).SetWidth(200f);
                                                         })
                                                     )
                                                 );
                                             }
-
+                        
                                             return UI.Column(rows);
                                         }
                                     }
@@ -224,15 +229,16 @@ UI.Tabs(
                             )
                         )
                     )
-                ).SetWidth(width)
+                )
             );
         }
 
         private Element CreateElement_FoldArgument()
         {
+            var boolValue = false;
             return ExampleTemplate.CodeElementSets("Fold argument",
                 (@"UI.Fold(
-    UI.Field(""CustomBar"", () => intValue), 
+    UI.Toggle(""CustomBar"", () => boolValue), 
     new[]
     {
         UI.Label(""Element"")
@@ -240,7 +246,8 @@ UI.Tabs(
 );
 ",
                     UI.Fold(
-                        UI.Field("CustomBar", () => intValue),
+                        // UI.Field("CustomBar", () => intValue),
+                        UI.Toggle("CustomBar", () => boolValue),
                         new[]
                         {
                             UI.Label("Element")

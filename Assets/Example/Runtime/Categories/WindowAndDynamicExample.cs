@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UnityEngine;
 
@@ -15,32 +16,80 @@ namespace RosettaUI.Example
             
             return UI.Tabs(
                 CreateTabWindowLauncher(),
+                CreateTabWindowLauncherTabs(),
                 CreateTabFieldIfObjectFound(),
                 CreateTabDynamicElement()
             );
         }
 
+        [SuppressMessage("ReSharper", "ConvertToConstant.Local")]
         private static (string, Element) CreateTabWindowLauncher()
         {
+            var intValue = 0;
+            
             return ExampleTemplate.CodeElementSetsTab(ExampleTemplate.UIFunctionStr(nameof(UI.WindowLauncher)),
                 (@"UI.WindowLauncher(
     UI.Window(
-        UI.Label(""Element"")
+        ""Simple Window"",
+        UI.Field(() => intValue)
     )
 );
 ",
                     UI.WindowLauncher(
                         UI.Window(
-                            UI.Label("Window")
+                            "Simple Window",
+                            UI.Field(() => intValue)
                         )
                     )
                 ),
-                ("UI.WindowLauncher<BehaviourExample>();\n", UI.WindowLauncher<BehaviourExample>()),
-                (@"UI.WindowLauncher<BehaviourExample>(
+                (@"// Display UI of objects that found by FindObjectByType()
+UI.WindowLauncher(
+    typeof(BehaviorExample),
+    typeof(BehaviorAnotherExample)
+);
+",
+                    UI.WindowLauncher(
+                        typeof(BehaviourExample),
+                        typeof(BehaviourAnotherExample)
+                        )),
+                (@"UI.WindowLauncher(
     supportMultiple: true, 
-    includeInactive: true
+    includeInactive: true,
+    typeof(BehaviourExample),
+    typeof(BehaviourAnotherExample)
 );",
-                    UI.WindowLauncher<BehaviourExample>(supportMultiple: true, includeInactive: true))
+                    UI.WindowLauncher(
+                        supportMultiple: true, 
+                        includeInactive: true,
+                        typeof(BehaviourExample),
+                        typeof(BehaviourAnotherExample)
+                    )
+                )
+            );
+        }
+        
+        private static (string, Element) CreateTabWindowLauncherTabs()
+        {
+            return ExampleTemplate.CodeElementSetsTab(ExampleTemplate.UIFunctionStr(nameof(UI.WindowLauncherTabs)),
+                (@"UI.WindowLauncherTabs(nameof(UI.WindowLauncherTabs),
+    typeof(BehaviourExample),
+    typeof(BehaviourAnotherExample)
+);
+",
+                    UI.WindowLauncherTabs(nameof(UI.WindowLauncherTabs), typeof(BehaviourExample), typeof(BehaviourAnotherExample))
+                ),
+                (@"UI.WindowLauncherTabs($""{nameof(UI.WindowLauncherTabs)} with options"",
+    supportMultiple: true,
+    includeInactive: true,
+    typeof(BehaviourExample),
+    typeof(BehaviourAnotherExample)
+);",
+                    UI.WindowLauncherTabs($"{nameof(UI.WindowLauncherTabs)} with options", 
+                        supportMultiple: true,
+                        includeInactive: true,
+                        typeof(BehaviourExample),
+                        typeof(BehaviourAnotherExample))
+                )
             );
         }
 

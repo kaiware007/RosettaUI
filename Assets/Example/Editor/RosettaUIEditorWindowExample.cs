@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using RosettaUI;
 using RosettaUI.Editor;
@@ -14,37 +16,81 @@ public class RosettaUIEditorWindowExample : RosettaUIEditorWindowUIToolkit
         wnd.titleContent = new GUIContent(nameof(RosettaUIEditorWindowExample));
     }
 
+    
     public GameObject gameObject;
+    private Dictionary<string, (ButtonElement button, Element element)> _typeNameToElementSet;
+    private string _currentTypeName;
     
     protected override Element CreateElement()
     {
-        var types = RosettaUIExample.ExampleTypes;
+        var typeAndNames = RosettaUIExample.ExampleTypes.Select(type => (type, name: type.ToString().Split('.').Last()));
         
-        return UI.Tabs(
-            types.Select(type =>
-            {
-                var tabName = type.ToString().Split('.').Last();
 
-                return Tab.Create(tabName, () =>
-                {
-                    var obj = FindObjectOfType(type, true);
-                    return UI.Field(() => obj);
-                });
-            }).Concat(new[]{CreateUIEditorTab()})
+        _typeNameToElementSet = typeAndNames.ToDictionary(
+            typeAndName => typeAndName.name,
+            typeAndName => (
+                CreateTypeButton(typeAndName.name),
+                (Element)UI.FieldIfObjectFound(typeAndName.type, includeInactive: true)
+            )
         );
+
+        _typeNameToElementSet[nameof(UIEditor)] = (
+            CreateTypeButton(nameof(UIEditor)),
+            CreateUIEditorField()
+        );
+
+        SetCurrentTypeName(_typeNameToElementSet.Keys.First());
+        
+        
+        return UI.ScrollView(ScrollViewType.VerticalAndHorizontal, new []
+        {
+            UI.Row(
+                UI.Column(
+                    _typeNameToElementSet.Values.Select(pair => pair.button)
+                ).SetWidth(200f),
+                UI.Page(
+                    UI.Box(
+                        _typeNameToElementSet.Values.Select(pair => pair.element)
+                    )
+                )
+            )
+        });
+
+
+        ButtonElement CreateTypeButton(string typeName)
+        {
+            return UI.Button(
+                $"<align=left>{typeName}</align>",
+                () => SetCurrentTypeName(typeName)
+            );
+        }
+        
+        void SetCurrentTypeName(string typeName)
+        {
+            if (_currentTypeName == typeName) return;
+            _currentTypeName = typeName;
+            UpdateElements();
+        }
+
+        void UpdateElements()
+        {
+            foreach (var (typeName, (button, e)) in _typeNameToElementSet)
+            {
+                var isCurrent = typeName == _currentTypeName;
+                button.SetBackgroundColor(isCurrent ? Color.gray : null);
+                e.Enable = isCurrent;
+            }
+        }
     }
 
-    private Tab CreateUIEditorTab()
+    private Element CreateUIEditorField()
     {
-        return Tab.Create(
-            nameof(UIEditor),
-            () => UI.Column(
-                ExampleTemplate.FunctionColumn(nameof(UIEditor), nameof(UIEditor.ObjectField),
-                    UIEditor.ObjectField(() => gameObject)
-                ),
-                ExampleTemplate.FunctionColumn(nameof(UIEditor), nameof(UIEditor.ObjectFieldReadOnly),
-                    UIEditor.ObjectFieldReadOnly(() => gameObject)
-                )
+        return UI.Column(
+            ExampleTemplate.FunctionColumn(nameof(UIEditor), nameof(UIEditor.ObjectField),
+                UIEditor.ObjectField(() => gameObject)
+            ),
+            ExampleTemplate.FunctionColumn(nameof(UIEditor), nameof(UIEditor.ObjectFieldReadOnly),
+                UIEditor.ObjectFieldReadOnly(() => gameObject)
             )
         );
     }
